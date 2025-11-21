@@ -1,11 +1,13 @@
 # coding: utf-8
 
 class Stakeholder():
+    count = 0
     def __init__(self, id, name, address, phone_number):
         self.id = id
         self.name = name
         self.address = address
         self.phone_number = phone_number
+        Stakeholder.count += 1
 
     def show_information(self):
         print(f'ID: {self.id} \nTên: {self.name}\nĐịa chỉ: {self.address}\nSố điện thoại: {self.phone_number}')
@@ -97,15 +99,19 @@ class Category():
     def remove_products(self):
         pass
 
-    def count(self):
-        pass
+    def count_products(self):
+        print('Số lượng sản phẩm trong danh mục: ')
+        return len(self.products)
 
     def show_information(self):
-        pass
+        print(f'Mã danh mục: {self.id}\n Tên danh mục: {self.name}\n Loại sản phẩm: {self.products}\n Mô tả: {self.description}')
 
 class Product():
-
+    pass
 
 # bên dưới là để test nhé
 nv = Employee("000", "Thành", "Hà Nội", "09999848783", "nam")
+nv2 = Employee("001", "Thành", "Hà Nội", "0987654321", "nam")
+nv3 = Employee("002", "Thành", "Hà Nội", "09999848783", "nam")
 nv.show_information()
+
