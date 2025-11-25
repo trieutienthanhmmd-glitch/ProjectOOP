@@ -184,10 +184,10 @@ class Category():
                 print(f'- {product}')
 
 class Product():
-    def __init__(self, id, name, category, cost, selling_price, stock, status, supplier):
+    def __init__(self, id, name, category_id, cost, selling_price, stock, status, supplier):
         self.id = id
         self.name = name
-        self.category = category
+        self.category_id = category_id
         self.cost = cost
         self.selling_price = selling_price
         self.stock = stock
@@ -215,8 +215,8 @@ class Product():
     def update_price(self, new_price):
         self.selling_price = new_price
 
-
-
+class Bill():
+    pass
 
 # bên dưới là để test nhé
 nv = Employee("NV001", "Thành", "Hà Nội", "09999848783", "nam", "001205034918","Nhân viên bán hàng")
