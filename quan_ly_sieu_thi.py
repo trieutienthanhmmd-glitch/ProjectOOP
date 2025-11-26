@@ -1,4 +1,5 @@
 # coding: utf-8
+from datetime import datetime
 
 class Stakeholder():
     def __init__(self, id, name, address, phone_number):
@@ -29,15 +30,33 @@ class Employee(Stakeholder):
     active_employee = 0
     total_employee = []
 
-    def __init__(self, id, name, address, phone_number, gender, identification, title):
+    def __init__(self, id, name, address, phone_number,date_of_birth, gender, identification, title, account: Account):
         self.identification = identification
         self.gender = gender
         self.title = title
+        self.date_of_birth = date_of_birth
         super().__init__(id, name, address, phone_number)
         self.is_active_employee = True
         if not any(emp.id == id for emp in Employee.total_employee):
             Employee.total_employee.append(self)
             Employee.active_employee += 1
+        self.check_in_time = None
+        self.check_out_time = None
+        self.account = account
+
+    def check_in(self):
+        self.check_in_time = datetime.now()
+        print(f"{self.name} đã check in lúc {self.check_in_time}")
+
+    def check_out(self):
+        if self.check_in_time is None:
+            print("Lỗi: Nhân viên chưa check in!")
+            return
+        self.check_out_time = datetime.now()
+        print(f"{self.name} đã check out lúc {self.check_out_time}")
+        working_hours = (self.check_out_time - self.check_in_time).seconds / 3600
+        print(f"Thời gian làm việc: {working_hours:.2f} giờ")
+        return working_hours
 
     def resign(self):
         if self.is_active_employee:
@@ -49,6 +68,7 @@ class Employee(Stakeholder):
 
     def show_information(self):
         super().show_information()
+        print(f'Ngày sinh: {self.date_of_birth}')
         print(f'Giới tính: {self.gender}')
         print(f'Số CCCD: {self.identification}')
         print(f'Chức vụ: {self.title}')
@@ -98,6 +118,13 @@ class Customer(Stakeholder):
             print(f'Điểm tích lũy của khách hàng {self.id}: {self.shopping_point}\n')
         else :
             print('Không đủ điều kiện cộng điểm')
+
+    def redeem_points(self, amount):
+        if amount > self.shopping_point:
+            print("Không đủ điểm!")
+            return
+        self.shopping_point -= amount
+        print(f"Đã sử dụng {amount} điểm → Còn lại: {self.shopping_point}")
 
     def show_information(self):
         super().show_information()
@@ -215,15 +242,84 @@ class Product():
     def update_price(self, new_price):
         self.selling_price = new_price
 
+class Cart():
+    def __init__(self, product_id, name, quantity, unit_price):
+        self.product_id = product_id
+        self.name = name
+        self.quantity = quantity
+        self.unit_price = unit_price
+
+    def total_price(self):
+        return self.quantity * self.unit_price
+
 class Bill():
-    pass
+    def __init__(self, bill_id, customer_id, employee_id):
+        self.bill_id = bill_id
+        self.customer_id = customer_id
+        self.employee_id = employee_id
+        self.items = []
+        self.discount = 0
+        self.payment_method = None
+
+    def add_item(self, product_id, name, quantity, unit_price):
+        item = Cart(product_id, name, quantity, unit_price)
+        self.items.append(item)
+
+    def calculate_total(self):
+        return sum(item.total_price() for item in self.items)
+
+    def apply_discount(self, discount):
+        self.discount = discount
+
+    def finalize(self):
+        total = self.calculate_total()
+        self.final_amount = total - self.discount
+        return self.final_amount
+
+    def show_bill(self):
+        print("Hóa đơn bao gồm: ")
+        for item in self.items:
+            print(f"{item.name} x {item.quantity} = {item.total_price()}")
+        print(f"Giảm giá: {self.discount}")
+        print(f"Tổng thanh toán: {self.final_amount}")
+
+class Account():
+    def __init__(self, username, password, email):
+        self.username = username
+        self.password = password
+        self.email = email
+
+    def login(self, input_user, input_pass):
+        return input_user == self.username and input_pass == self.password
+
+    def logout(self):
+        print("Tài khoản đã đăng xuất")
+
+    def change_password(self, old_password, new_password):
+        if old_password == self.password:
+            self.password = new_password
+            return True
+        return False
+
+    def forgot_password(self, email, new_password):
+        if email == self.email:
+            self.password = new_password
+            print("Đặt lại mật khẩu thành công!")
+        else:
+            print("Email không chính xác, không thể đặt lại mật khẩu.")
 
 # bên dưới là để test nhé
-nv = Employee("NV001", "Thành", "Hà Nội", "09999848783", "nam", "001205034918","Nhân viên bán hàng")
+nv = Employee("NV001", "Thành", "Hà Nội", "09999848783",'6-6-1999', "nam", "001205034918","Nhân viên bán hàng", Account)
 kh = Customer("KH001", "Thành", "HN", "0987654321", 0)
 ncc = Supplier("NCC001", "Thành", "HN", "0987654321", "Thành - 0987654321", "trieutienthanh@gmail.com", "Chưa cung cấp")
 dm = Category("DM001", "Nước tăng lực", "Uống cho khỏe", "1-1-2025", "1-1-2030")
 
-c2 = Customer("KH001", "Nguyễn Văn A", "Hà Nội", "0901234567", 5)
-c3 = Customer("KH002", "Nguyễn Văn A", "Hà Nội", "0901234567", 5)
-c2.checkout(400000)
+acc = Account("tienthanh", "123456", "abc@gmail.com")
+
+print(acc.login("tienthanh", "123456"))
+
+# Quên mật khẩu
+acc.forgot_password("abc@gmail.com", "newpass123")
+
+# Đăng nhập lại bằng mật khẩu mới
+print(acc.login("tienthanh", "newpass123"))
