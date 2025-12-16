@@ -1,2 +1,1 @@
-#Project OOP: Quản lý siêu thị 
-## Mô tả chức năng: 
+#Project cuối kì OOP: Quản lý siêu thị
