@@ -30,14 +30,23 @@ class Customer():
             raise ValueError("Point is more than the shopping point")
         self.shopping_point -= point
 
+class Supplier():
+    def __init__(self, supplier_id, name, hotline, manager, address):
+        self.id = supplier_id
+        self.name = name
+        self.hotline = hotline
+        self.manager = manager
+        self.address = address
+
 class Product():
-    def __init__(self, product_id, name, price, description, quantity, category_id):
+    def __init__(self, product_id, name, price, description, quantity, category_id, supplier_id):
         self.id = product_id
         self.name = name
         self.price = price
         self.description = description
         self.quantity = quantity
         self.category_id = category_id
+        self.supplier_id = supplier_id
         self.is_active = True
 
     def increase_stock(self, amount):
