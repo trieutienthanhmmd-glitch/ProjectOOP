@@ -1,12 +1,14 @@
+from datetime import datetime
+
 class Employee():
-    def __init__(self, employee_id, name, phone_number,birthday, gender, identification, title):
+    def __init__(self, employee_id, name, phone_number, date_of_birth, gender, identification, title):
         self.employee_id = employee_id
         self.name = name
         self.phone_number = phone_number
         self.identification = identification
         self.gender = gender
         self.title = title
-        self.birthday = birthday
+        self.date_of_birth = date_of_birth
         self.is_working = True
 
     def resign(self):
@@ -109,6 +111,7 @@ class Bill():
         self.items = []
         self.total_amount = 0
         self.applied_point = 0
+        self.created_at = datetime.now()
 
     def add_item(self, product_id, quantity, price):
         item = BillItem(product_id, quantity, price)
