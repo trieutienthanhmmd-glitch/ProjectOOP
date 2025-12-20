@@ -7,7 +7,10 @@
     <list default="true" id="12ccd966-7846-4b84-9b15-a9e6ebae090b" name="Changes" comment="Testing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/interface/main_dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/main_dashboard.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/tab_for_product.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/tab_for_product.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/tab_for_report.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/tab_for_report.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/tab_for_sales.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/tab_for_sales.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/services.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,6 +68,7 @@
     "Python.main_dashboard.executor": "Run",
     "Python.quan_ly_sieu_thi.executor": "Run",
     "Python.quan_ly_thu_vien.executor": "Run",
+    "Python.services.executor": "Run",
     "Python.tab_for_customer.executor": "Run",
     "Python.tab_for_employee.executor": "Run",
     "Python.tab_for_sales.executor": "Run",
@@ -372,7 +376,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766253809299</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Testing">
+      <option name="closed" value="true" />
+      <created>1766254718642</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1766254718642</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

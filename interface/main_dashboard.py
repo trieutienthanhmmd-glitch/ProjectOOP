@@ -5,6 +5,7 @@ from interface.tab_for_sales import SaleTab
 from interface.tab_for_employee import EmployeeTab
 from interface.tab_for_customer import CustomerTab
 from interface.tab_for_product import ProductTab
+from interface.tab_for_report import ReportTab
 
 class MainWindow:
     def __init__(self, root, employee):
@@ -69,19 +70,8 @@ class MainWindow:
         self.notebook.add(employee_tab, text="QUẢN LÝ NHÂN VIÊN")
 
     def create_report_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="BÁO CÁO")
-
-        title = tk.Label(tab, text="BÁO CÁO TỔNG HỢP DOANH THU & HOẠT ĐỘNG", font=("Arial", 18, "bold"))
-        title.pack(pady=20)
-
-        btn = tk.Button(tab, text="XEM BÁO CÁO CHI TIẾT", font=("Arial", 14, "bold"),
-                        width=40, height=2, bg="#f39c12", fg="white",
-                        command=self.show_report)
-        btn.pack(pady=20)
-
-        self.report_text = scrolledtext.ScrolledText(tab, width=150, height=30, font=("Courier", 10))
-        self.report_text.pack(padx=20, pady=10, fill="both", expand=True)
+        report_tab = ReportTab(self.notebook)
+        self.notebook.add(report_tab, text="BÁO CÁO")
 
     def show_report(self):
         self.report_text.delete(1.0, tk.END)

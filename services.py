@@ -1,6 +1,7 @@
 #Base Service connect database (lớp cha)
 import mysql.connector
 from mysql.connector import Error
+from datetime import datetime, timedelta
 
 class BaseService:
     def __init__(self):
@@ -273,15 +274,23 @@ class ReportService(BaseService):
     # 4. Sản phẩm sắp hết hàng
     def get_low_stock_products(self, threshold=20):
         cursor = self.get_cursor()
-        cursor.execute("""
-            SELECT product_id, name, price, quantity, category_id
-            FROM product
-            WHERE is_active = 1 AND quantity <= %s
-            ORDER BY quantity ASC
-        """, (threshold,))
-        rows = cursor.fetchall()
-        cursor.close()
-        return [Product(**row) for row in rows]
+        if not cursor:
+            return []
+        try:
+            cursor.execute("""
+                SELECT product_id, name, price, description, quantity, 
+                       category_id, supplier_id, is_active
+                FROM product
+                WHERE is_active = 1 AND quantity <= %s
+                ORDER BY quantity ASC
+            """, (threshold,))
+            rows = cursor.fetchall()
+            return [Product(**row) for row in rows]
+        except Error as e:
+            print(f"[ReportService] Lỗi get_low_stock_products: {e}")
+            return []
+        finally:
+            cursor.close()
 
     # 5. Thống kê theo danh mục
     def get_revenue_by_category(self, start_date=None, end_date=None):
@@ -365,7 +374,6 @@ class ReportService(BaseService):
         print()
 
         # 5. Doanh thu theo danh mục (7 ngày gần nhất)
-        from datetime import datetime, timedelta
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
 
