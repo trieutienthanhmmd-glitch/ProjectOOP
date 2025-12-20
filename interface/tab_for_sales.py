@@ -210,117 +210,57 @@ class SaleTab(ttk.Frame):
 
     def checkout(self):
         if not self.cart:
-            messagebox.showwarning("Giỏ trống", "Chưa có sản phẩm nào trong giỏ hàng!")
+            messagebox.showwarning("Giỏ trống", "Chưa có sản phẩm nào trong giỏ!")
             return
 
-        # Disable nút thanh toán để tránh bấm nhiều lần
-        for widget in self.winfo_parent().winfo_children():
-            if isinstance(widget, tk.Frame):
-                for child in widget.winfo_children():
-                    if isinstance(child, tk.Button) and child.cget("text") == "THANH TOÁN":
-                        child.config(state="disabled")
+        total = sum(item['quantity'] * item['product'].price for item in self.cart)
 
-        # Chạy thanh toán trong thread riêng để không đơ app
-        import threading
-        threading.Thread(target=self._process_checkout, daemon=True).start()
-
-    def _process_checkout(self):
-        try:
-            # Tính tổng tiền
-            total = sum(item['quantity'] * item['product'].price for item in self.cart)
-            customer_id = getattr(self.current_customer, 'customer_id', None)
-            used_points = 0
-
-            if self.current_customer:
-                fresh = self.customer_service.get_customer_by_phone(self.current_customer.phone_number)
-                current_points = getattr(fresh, 'shopping_point', 0) if fresh else 0
-                if current_points > 0:
-                    max_use = min(current_points, total)
-                    # Dùng queue để hỏi user từ main thread
-                    from queue import Queue
-                    queue = Queue()
-
-                    def ask_use_points():
-                        result = messagebox.askyesno("Dùng điểm?", f"Khách có {current_points:,} điểm. Dùng giảm giá?")
-                        queue.put(result)
-
-                    self.after(0, ask_use_points)
-                    if queue.get():
-                        def ask_amount():
-                            amount = simpledialog.askinteger("Dùng điểm", f"Nhập số điểm (tối đa {max_use:,}):",
-                                                             minvalue=0, maxvalue=max_use)
-                            queue.put(amount)
-
-                        self.after(0, ask_amount)
-                        used_points_input = queue.get()
-                        used_points = used_points_input if used_points_input is not None else 0
-
-            final_total = total - used_points
-
-            # Xác nhận cuối
-            queue = Queue()
-
-            def confirm_payment():
-                result = messagebox.askyesno("Xác nhận",
-                                             f"Tổng tiền: {total:,.0f} VND\n"
-                                             f"Dùng điểm: {used_points:,}\n"
-                                             f"Thành tiền: {final_total:,.0f} VND\n\n"
-                                             f"Thanh toán?")
-                queue.put(result)
-
-            self.after(0, confirm_payment)
-            if not queue.get():
-                self.after(0, self._enable_payment_button)
-                return
-
-            # Thanh toán thực tế
-            bill = self.bill_service.create_bill(customer_id=customer_id, employee_id=self.employee['employee_id'])
-            if not bill:
-                self.after(0, lambda: messagebox.showerror("Lỗi", "Không thể tạo hóa đơn!"))
-                self.after(0, self._enable_payment_button)
-                return
-
-            success = True
-            for item in self.cart:
-                if not self.bill_service.add_item_to_bill(bill.bill_id, item['product'].product_id, item['quantity']):
-                    success = False
-                    break
-
-            if success and used_points > 0 and customer_id:
-                self.bill_service.apply_points(bill.bill_id, used_points, customer_id)
-
-            if success:
-                points_earned = final_total // 100000
-                self.bill_service.complete_bill(bill.bill_id, customer_id, points_earned)
-
-                self.after(0, lambda: messagebox.showinfo("Thành công!",
-                                                          f"Thanh toán thành công!\n"
-                                                          f"Thành tiền: {final_total:,.0f} VND\n"
-                                                          f"Điểm mới: +{points_earned}"))
-
-                self.after(0, self.clear_cart)
-                if customer_id:
-                    self.after(0, self._refresh_customer_points)
-                self.after(0, self.load_all_products)
-            else:
-                self.after(0, lambda: messagebox.showerror("Lỗi", "Thanh toán thất bại! Có thể hết hàng."))
-
-        except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Lỗi hệ thống", f"Lỗi: {e}"))
-            print(f"[CHECKOUT THREAD ERROR] {e}")
-        finally:
-            self.after(0, self._enable_payment_button)
-
-    def _enable_payment_button(self):
-        for widget in self.winfo_parent().winfo_children():
-            if isinstance(widget, tk.Frame):
-                for child in widget.winfo_children():
-                    if isinstance(child, tk.Button) and child.cget("text") == "THANH TOÁN":
-                        child.config(state="normal")
-
-    def _refresh_customer_points(self):
+        used_points = 0
         if self.current_customer:
-            updated = self.customer_service.get_customer_by_phone(self.current_customer.phone_number)
-            if updated:
-                self.current_customer = updated
-                self.lbl_customer.config(text=f"{updated.name} - Điểm: {updated.shopping_point}")
+            current_points = getattr(self.current_customer, 'shopping_point', 0)
+            if current_points > 0:
+                max_use = min(current_points, total)
+                use = messagebox.askyesno("Dùng điểm", f"Khách có {current_points:,} điểm. Dùng để giảm giá? (tối đa {max_use:,}đ)")
+                if use:
+                    used_points = simpledialog.askinteger("Dùng điểm", f"Nhập số điểm dùng (tối đa {max_use:,}):",
+                                                          minvalue=0, maxvalue=max_use)
+                    used_points = used_points or 0
+
+        final_total = total - used_points
+
+        if not messagebox.askyesno("Xác nhận thanh toán",
+                                   f"Tổng tiền: {total:,.0f} VND\n"
+                                   f"Dùng điểm: {used_points:,} điểm\n"
+                                   f"Thành tiền: {final_total:,.0f} VND\n\n"
+                                   f"Xác nhận thanh toán?"):
+            return
+
+        # Tạo bill
+        bill = self.bill_service.create_bill(
+            customer_id=getattr(self.current_customer, 'customer_id', None),
+            employee_id=self.employee['employee_id']
+        )
+
+        success = True
+        for item in self.cart:
+            if not self.bill_service.add_item_to_bill(bill.bill_id, item['product'].product_id, item['quantity']):
+                success = False
+                break
+
+        if used_points > 0 and self.current_customer:
+            self.bill_service.apply_points(bill.bill_id, used_points, self.current_customer.customer_id)
+
+        if success:
+            # Tích điểm mới: 1 điểm mỗi 100.000đ thành tiền
+            points_earned = final_total // 100000
+            self.bill_service.complete_bill(bill.bill_id, getattr(self.current_customer, 'customer_id', None), points_earned)
+
+            messagebox.showinfo("THÀNH CÔNG!",
+                                f"Thanh toán thành công!\n"
+                                f"Thành tiền: {final_total:,.0f} VND\n"
+                                f"Tích điểm mới: +{points_earned} điểm")
+            self.clear_cart()
+            self.search_customer()  # Cập nhật điểm mới
+            self.load_all_products()  # Cập nhật tồn kho
+        else:
+            messagebox.showerror("Lỗi", "Thanh toán thất bại! Có thể sản phẩm đã hết hàng.")
