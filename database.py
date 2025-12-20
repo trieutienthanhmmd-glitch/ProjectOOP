@@ -1,8 +1,8 @@
+# database.py - Setup database với ID có prefix (đã sửa lỗi biến)
 import mysql.connector
 from mysql.connector import Error
 
 try:
-    # Kết nối đến database đã có
     db = mysql.connector.connect(
         host='localhost',
         user='root',
@@ -14,20 +14,24 @@ try:
 
     mycursor = db.cursor()
 
-    # 1. Tạo bảng category
+    tables_to_drop = ['bill_item', 'bill', 'product', 'customer', 'employee', 'supplier', 'category']
+    for table in tables_to_drop:
+        mycursor.execute(f"DROP TABLE IF EXISTS {table};")
+
+    # 1. Category
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS category (
-            category_id INT AUTO_INCREMENT PRIMARY KEY,
+        CREATE TABLE category (
+            category_id VARCHAR(10) PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             description TEXT,
             is_active TINYINT(1) DEFAULT 1
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # 2. Tạo bảng supplier
+    # 2. Supplier
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS supplier (
-            supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+        CREATE TABLE supplier (
+            supplier_id VARCHAR(10) PRIMARY KEY,
             name VARCHAR(150) NOT NULL,
             hotline VARCHAR(20),
             manager VARCHAR(100),
@@ -35,10 +39,10 @@ try:
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # 3. Tạo bảng customer (sửa: dùng customer_id làm khóa chính)
+    # 3. Customer
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS customer (
-            customer_id INT AUTO_INCREMENT PRIMARY KEY,
+        CREATE TABLE customer (
+            customer_id VARCHAR(10) PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             phone_number VARCHAR(20) NOT NULL UNIQUE,
             shopping_point INT DEFAULT 0 CHECK (shopping_point >= 0),
@@ -46,10 +50,10 @@ try:
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # 4. Tạo bảng employee (phải tạo TRƯỚC bill)
+    # 4. Employee
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS employee (
-            employee_id INT AUTO_INCREMENT PRIMARY KEY,
+        CREATE TABLE employee (
+            employee_id VARCHAR(10) PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
             phone_number VARCHAR(20),
             birthday DATE,
@@ -60,28 +64,28 @@ try:
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # 5. Tạo bảng product
+    # 5. Product
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS product (
-            product_id INT AUTO_INCREMENT PRIMARY KEY,
+        CREATE TABLE product (
+            product_id VARCHAR(10) PRIMARY KEY,
             name VARCHAR(150) NOT NULL,
             price DECIMAL(15,2) NOT NULL CHECK (price >= 0),
             description TEXT,
             quantity INT NOT NULL CHECK (quantity >= 0),
-            category_id INT,
-            supplier_id INT,
+            category_id VARCHAR(10),
+            supplier_id VARCHAR(10),
             is_active TINYINT(1) DEFAULT 1,
             FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE SET NULL,
             FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id) ON DELETE SET NULL
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # 6. Tạo bảng bill (sửa foreign key đúng tên cột)
+    # 6. Bill
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS bill (
+        CREATE TABLE bill (
             bill_id INT AUTO_INCREMENT PRIMARY KEY,
-            customer_id INT,
-            employee_id INT NOT NULL,
+            customer_id VARCHAR(10),
+            employee_id VARCHAR(10) NOT NULL,
             total_amount DECIMAL(15,2) DEFAULT 0,
             applied_point INT DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -90,12 +94,12 @@ try:
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # 7. Tạo bảng bill_item (chi tiết hóa đơn)
+    # 7. Bill_item
     mycursor.execute("""
-        CREATE TABLE IF NOT EXISTS bill_item (
+        CREATE TABLE bill_item (
             bill_item_id INT AUTO_INCREMENT PRIMARY KEY,
             bill_id INT NOT NULL,
-            product_id INT NOT NULL,
+            product_id VARCHAR(10) NOT NULL,
             quantity INT NOT NULL CHECK (quantity > 0),
             price DECIMAL(15,2) NOT NULL CHECK (price >= 0),
             FOREIGN KEY (bill_id) REFERENCES bill(bill_id) ON DELETE CASCADE,
@@ -103,13 +107,10 @@ try:
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     """)
 
-    # Lưu thay đổi
     db.commit()
 
-#Import data
-
-    # 1. 20 Danh mục (Category)
-    category_data = [
+    # 1. Category (DM001 - DM020)
+    category_raw = [
         ('Thực phẩm khô', 'Gạo, mì gói, bột, gia vị, đồ hộp'),
         ('Thực phẩm tươi', 'Rau củ quả, thịt cá tươi sống'),
         ('Đồ uống không cồn', 'Nước ngọt, nước suối, sữa, trà đóng chai'),
@@ -131,10 +132,12 @@ try:
         ('Vệ sinh nhà cửa', 'Nước lau sàn, nước rửa chén, túi đựng rác'),
         ('Hàng tiêu dùng khác', 'Pin, bóng đèn, vật dụng linh tinh'),
     ]
-    mycursor.executemany("INSERT IGNORE INTO category (name, description) VALUES (%s, %s)", category_data)
+    category_data = [(f"DM{i:03d}", name, desc) for i, (name, desc) in enumerate(category_raw, 1)]
+    mycursor.executemany("INSERT IGNORE INTO category (category_id, name, description) VALUES (%s, %s, %s)", category_data)
+    db.commit()
 
-    # 2. 20 Nhà cung cấp (Supplier)
-    supplier_data = [
+    # 2. Supplier (NCC001 - NCC020)
+    supplier_raw = [
         ('Công ty CP Sữa Việt Nam (Vinamilk)', '1800-156-158', 'Nguyễn Văn A', 'TP.HCM'),
         ('Coca-Cola Việt Nam', '1800-888-999', 'Trần Thị B', 'Hà Nội'),
         ('Unilever Việt Nam', '1900-555-888', 'Lê Văn C', 'TP.HCM'),
@@ -156,10 +159,12 @@ try:
         ('Bảo Việt (Bảo hiểm)', '1800-777-888', 'Lâm Văn T', 'Hà Nội'),
         ('Nhật Bản - Rohto Mentholatum', '1900-555-999', 'Tô Thị U', 'TP.HCM'),
     ]
-    mycursor.executemany("INSERT IGNORE INTO supplier (name, hotline, manager, address) VALUES (%s, %s, %s, %s)", supplier_data)
+    supplier_data = [(f"NCC{i:03d}", *item) for i, item in enumerate(supplier_raw, 1)]
+    mycursor.executemany("INSERT IGNORE INTO supplier (supplier_id, name, hotline, manager, address) VALUES (%s, %s, %s, %s, %s)", supplier_data)
+    db.commit()
 
-    # 3. 20 Nhân viên (Employee)
-    employee_data = [
+    # 3. Employee (NV001 - NV020)
+    employee_raw = [
         ('Nguyễn Văn An', '0911111111', '1990-01-15', 'Nam', '123456789', 'Quản lý'),
         ('Trần Thị Bình', '0912222222', '1992-05-20', 'Nữ', '987654321', 'Thu ngân'),
         ('Lê Văn Cường', '0913333333', '1995-08-10', 'Nam', '111222333', 'Nhân viên kho'),
@@ -181,13 +186,16 @@ try:
         ('Lâm Văn Sang', '0929999999', '1994-11-11', 'Nam', '404404404', 'Nhân viên bán hàng'),
         ('Tô Thị Thảo', '0930000000', '1999-09-09', 'Nữ', '505505505', 'Thu ngân'),
     ]
+    employee_data = [(f"NV{i:03d}", *item) for i, item in enumerate(employee_raw, 1)]
     mycursor.executemany("""
-        INSERT IGNORE INTO employee (name, phone_number, birthday, gender, identification, title)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT IGNORE INTO employee 
+        (employee_id, name, phone_number, birthday, gender, identification, title, is_working)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, 1)
     """, employee_data)
+    db.commit()
 
-    # 4. 30 Khách hàng (Customer)
-    customer_data = [
+    # 4. Customer (KH001 - KH030)
+    customer_raw = [
         ('Nguyễn Văn Tèo', '0901001001', 350), ('Trần Thị Tý', '0902002002', 120),
         ('Lê Hoàng Long', '0903003003', 0), ('Phạm Thị Mai', '0904004004', 680),
         ('Vũ Văn Hưng', '0905005005', 210), ('Đặng Thị Lan', '0906006006', 450),
@@ -204,10 +212,12 @@ try:
         ('Quách Văn Thịnh', '0927002700', 160), ('Kiều Thị Nga', '0928002800', 590),
         ('Từ Văn Lộc', '0929002900', 270), ('Nghiêm Thị Yến', '0930003000', 820),
     ]
-    mycursor.executemany("INSERT IGNORE INTO customer (name, phone_number, shopping_point) VALUES (%s, %s, %s)", customer_data)
+    customer_data = [(f"KH{i:03d}", name, phone, point) for i, (name, phone, point) in enumerate(customer_raw, 1)]
+    mycursor.executemany("INSERT IGNORE INTO customer (customer_id, name, phone_number, shopping_point) VALUES (%s, %s, %s, %s)", customer_data)
+    db.commit()
 
-    # 5. 50 Sản phẩm (Product)
-    product_data = [
+    # 5. Product (SP001 - SP050)
+    product_raw = [
         ('Gạo ST25 5kg', 150000, 'Gạo ngon nhất thế giới', 50, 1, 1),
         ('Mì Hảo Hảo tôm chua cay', 4500, 'Mì ăn liền vị tôm chua cay', 200, 1, 4),
         ('Coca Cola 1.5L', 18000, 'Nước ngọt có gas', 150, 3, 2),
@@ -259,21 +269,25 @@ try:
         ('Xe đồ chơi điều khiển', 750000, 'Xe địa hình', 20, 12, None),
         ('Sữa bột Abbott Grow 900g', 780000, 'Cho bé 3 tuổi', 25, 13, 11),
     ]
+    product_data = []
+    for i, (name, price, desc, qty, cat_index, sup_index) in enumerate(product_raw, 1):
+        prod_id = f"SP{i:03d}"
+        cat_id = f"DM{cat_index:03d}" if cat_index else None
+        sup_id = f"NCC{sup_index:03d}" if sup_index else None
+        product_data.append((prod_id, name, price, desc, qty, cat_id, sup_id))
+
     mycursor.executemany("""
-        INSERT IGNORE INTO product (name, price, description, quantity, category_id, supplier_id)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT IGNORE INTO product (product_id, name, price, description, quantity, category_id, supplier_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, product_data)
-
-    # Lưu tất cả dữ liệu mẫu
     db.commit()
-
 
 except Error as e:
     print(f"Lỗi MySQL: {e}")
+    if 'db' in locals() and db.is_connected():
+        db.rollback()
 
 finally:
-    if db.is_connected():
+    if 'db' in locals() and db.is_connected():
         mycursor.close()
         db.close()
-
-

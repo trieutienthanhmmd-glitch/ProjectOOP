@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="12ccd966-7846-4b84-9b15-a9e6ebae090b" name="Changes" comment="Finish">
-      <change afterPath="$PROJECT_DIR$/interface/login_dashboard.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/interface/main_dashboard.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    <list default="true" id="12ccd966-7846-4b84-9b15-a9e6ebae090b" name="Changes" comment="Running">
+      <change afterPath="$PROJECT_DIR$/interface/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/em_interface.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/login_dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/login_dashboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/main_dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/interface/main_dashboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,8 +64,11 @@
     "Python.em_interface.executor": "Run",
     "Python.interface.executor": "Run",
     "Python.login_dashboard.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.main_dashboard.executor": "Run",
     "Python.quan_ly_sieu_thi.executor": "Run",
     "Python.quan_ly_thu_vien.executor": "Run",
+    "Python.test.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -345,7 +348,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766217700009</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="Running">
+      <option name="closed" value="true" />
+      <created>1766219962978</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1766219962978</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -361,7 +372,8 @@
     <MESSAGE value="Models" />
     <MESSAGE value="Build models" />
     <MESSAGE value="Finish" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finish" />
+    <MESSAGE value="Running" />
+    <option name="LAST_COMMIT_MESSAGE" value="Running" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ProjectOOP$quan_ly_thu_vien.coverage" NAME="quan_ly_thu_vien Coverage Results" MODIFIED="1763780504899" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

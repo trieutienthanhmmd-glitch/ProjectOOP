@@ -6,35 +6,49 @@ from mysql.connector import Error
 class LoginWindow:
     def __init__(self, root, on_success_callback):
         self.root = root
-        self.on_success_callback = on_success_callback  # Hàm gọi khi login thành công
+        self.on_success_callback = on_success_callback
         self.root.title("Đăng nhập hệ thống siêu thị")
-        self.root.geometry("450x350")
+        self.root.geometry("750x650")
         self.root.resizable(False, False)
-        self.root.configure(bg="#f4f6f9")
+        self.root.configure(bg="#f0f2f5")
 
         self.create_widgets()
 
     def create_widgets(self):
-        # Title
-        title = tk.Label(self.root, text="ĐĂNG NHẬP HỆ THỐNG", font=("Arial", 20, "bold"), bg="#f4f6f9", fg="#2c3e50")
-        title.pack(pady=40)
+        # Tiêu đề
+        title = tk.Label(self.root, text="ĐĂNG NHẬP HỆ THỐNG",
+                         font=("Arial", 28, "bold"), bg="#f0f2f5", fg="#2c3e50")
+        title.pack(pady=(60, 40))
 
-        # Form frame
-        form = tk.Frame(self.root, bg="#ffffff", relief="groove", bd=3)
-        form.pack(pady=20, padx=50, fill="x")
+        # Khung form chính (căn giữa)
+        form_frame = tk.Frame(self.root, bg="#ffffff", relief="ridge", bd=4, padx=50, pady=40)
+        form_frame.pack(pady=20, ipadx=30, ipady=30)
 
-        tk.Label(form, text="Mã nhân viên:", font=("Arial", 12), bg="#ffffff").pack(pady=15)
-        self.entry_id = tk.Entry(form, font=("Arial", 12), width=30, justify="center")
-        self.entry_id.pack(pady=5)
+        # Mã nhân viên
+        label_id = tk.Label(form_frame, text="Mã nhân viên:", font=("Arial", 16), bg="#ffffff")
+        label_id.grid(row=0, column=0, sticky="e", pady=20, padx=20)
+        self.entry_id = tk.Entry(form_frame, font=("Arial", 16), width=30, justify="center")
+        self.entry_id.grid(row=0, column=1, pady=20, padx=20)
 
-        tk.Label(form, text="CMND/CCCD:", font=("Arial", 12), bg="#ffffff").pack(pady=15)
-        self.entry_pass = tk.Entry(form, font=("Arial", 12), width=30, justify="center", show="*")
-        self.entry_pass.pack(pady=5)
+        # CMND/CCCD
+        label_pass = tk.Label(form_frame, text="CMND/CCCD:", font=("Arial", 16), bg="#ffffff")
+        label_pass.grid(row=1, column=0, sticky="e", pady=20, padx=20)
+        self.entry_pass = tk.Entry(form_frame, font=("Arial", 16), width=30, justify="center", show="*")
+        self.entry_pass.grid(row=1, column=1, pady=20, padx=20)
 
-        btn = tk.Button(self.root, text="ĐĂNG NHẬP", font=("Arial", 14, "bold"),
-                        bg="#3498db", fg="white", width=20, height=2,
-                        command=self.login)
-        btn.pack(pady=30)
+        # NÚT ĐĂNG NHẬP - ĐẶT RIÊNG RA NGOÀI FORM ĐỂ KHÔNG BỊ ẨN
+        btn_frame = tk.Frame(self.root, bg="#f0f2f5")
+        btn_frame.pack(pady=50)
+
+        self.btn_login = tk.Button(btn_frame, text="ĐĂNG NHẬP", font=("Arial", 18, "bold"),
+                                   bg="#3498db", fg="white", width=25, height=2,
+                                   relief="raised", bd=5, cursor="hand2",
+                                   command=self.login)
+        self.btn_login.pack()
+
+        # Hiệu ứng hover cho nút
+        self.btn_login.bind("<Enter>", lambda e: self.btn_login.config(bg="#2980b9"))
+        self.btn_login.bind("<Leave>", lambda e: self.btn_login.config(bg="#3498db"))
 
     def login(self):
         emp_id = self.entry_id.get().strip()
@@ -64,9 +78,9 @@ class LoginWindow:
 
             if employee:
                 messagebox.showinfo("Thành công", f"Chào mừng {employee['name']} ({employee['title']})!")
-                self.root.destroy()  # Đóng cửa sổ login
-                self.on_success_callback(employee)  # Gọi main window với thông tin nhân viên
+                self.root.destroy()
+                self.on_success_callback(employee)
             else:
-                messagebox.showerror("Thất bại", "Sai mã nhân viên hoặc CMND!")
+                messagebox.showerror("Thất bại", "Sai mã nhân viên hoặc CMND/CCCD!")
         except Error as e:
-            messagebox.showerror("Lỗi kết nối", f"Không thể kết nối database: {e}")
+            messagebox.showerror("Lỗi kết nối", f"Không thể kết nối database:\n{e}")
