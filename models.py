@@ -18,11 +18,11 @@ class Employee():
         return self.is_working
 
 class Customer():
-    def __init__(self, customer_id, name, phone_number):
+    def __init__(self, customer_id, name, phone_number, shopping_point = 0):
         self.customer_id = customer_id
         self.name = name
         self.phone_number = phone_number
-        self.shopping_point = 0
+        self.shopping_point = shopping_point
 
     def add_point(self, point):
         if not isinstance(point, int):

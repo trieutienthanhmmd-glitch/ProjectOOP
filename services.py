@@ -87,11 +87,15 @@ from models import Customer
 class CustomerService(BaseService):
     def get_customer_by_phone(self, phone_number):
         cursor = self.get_cursor()
-        cursor.execute("SELECT * FROM customer WHERE phone_number = %s", (phone_number,))
+        cursor.execute("""
+            SELECT customer_id, name, phone_number, shopping_point 
+            FROM customer 
+            WHERE phone_number = %s
+        """, (phone_number,))
         row = cursor.fetchone()
         cursor.close()
         if row:
-            return Customer(row['customer_id'], row['name'], row['phone_number'])
+            return Customer(row['customer_id'], row['name'], row['phone_number'], row['shopping_point'])
         return None
 
     def create_customer(self, name, phone_number):
@@ -179,19 +183,30 @@ class BillService(BaseService):
         return False
 
     def apply_points(self, bill_id, used_points, customer_id):
+        if used_points <= 0:
+            return False
+
         customer_service = CustomerService()
-        if customer_service.use_points(customer_id, used_points):
-            cursor = self.get_cursor()
+        if not customer_service.use_points(customer_id, used_points):
+            return False
+
+        cursor = self.get_cursor()
+        try:
+            # Trừ tiền bill (1 điểm = 1 VND)
             cursor.execute("""
                 UPDATE bill 
-                SET applied_point = %s,
+                SET applied_point = applied_point + %s,
                     total_amount = total_amount - %s
                 WHERE bill_id = %s
             """, (used_points, used_points, bill_id))
             self.commit()
-            cursor.close()
             return True
-        return False
+        except Error as e:
+            self.rollback()
+            print(f"Lỗi apply points: {e}")
+            return False
+        finally:
+            cursor.close()
 
     def complete_bill(self, bill_id, customer_id=None, points_earned=0):
         if customer_id and points_earned > 0:

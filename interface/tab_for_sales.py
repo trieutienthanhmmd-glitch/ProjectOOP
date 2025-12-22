@@ -125,7 +125,7 @@ class SaleTab(ttk.Frame):
         customer = self.customer_service.get_customer_by_phone(phone)
         if customer:
             self.current_customer = customer
-            points = getattr(customer, 'shopping_point', 0)  # Lấy điểm từ object
+            points = customer.shopping_point
             self.lbl_customer.config(text=f"{customer.name} - Điểm: {points}", fg="#27ae60")
             return
 
@@ -249,7 +249,9 @@ class SaleTab(ttk.Frame):
                 break
 
         if used_points > 0 and self.current_customer:
-            self.bill_service.apply_points(bill.bill_id, used_points, self.current_customer.customer_id)
+            if not self.bill_service.apply_points(bill.bill_id, used_points, self.current_customer.customer_id):
+                success = False
+                messagebox.showerror("Lỗi", "Không thể áp dụng điểm tích lũy!")
 
         if success:
             points_earned = final_total // 100000
@@ -273,6 +275,7 @@ class SaleTab(ttk.Frame):
         bill_window.title(f"HÓA ĐƠN THANH TOÁN - MÃ {bill_id}")
         bill_window.geometry("800x700")
         bill_window.configure(bg="white")
+        bill_window.state('zoomed')
 
         # Header hóa đơn
         header = tk.Frame(bill_window, bg="white")
